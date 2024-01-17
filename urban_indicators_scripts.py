@@ -35,7 +35,7 @@ def drop_nan_cols(gdf, na_cutoff_percent):
     import geopandas as gpd
     
     # assertions to weed out wrong input types
-    assert type(gdf) == gpd.geodataframe.geodataFrame, "df must be geodataframe"
+    assert type(gdf) == gpd.geodataframe.GeoDataFrame, "df must be geodataframe"
     assert 0.0 <= na_cutoff_percent <= 1.0, "NaN cutoff percent must be between 0 and 1"
     # assert target_geom_type in ["Point", "LineString", "Polygon"], "target geom type must be valid type of geometry"
 
