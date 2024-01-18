@@ -2,8 +2,8 @@
 Functions for Urban Assessment Tool.
 
 List of included functions:
+    - filter_elem_type()
     - drop_nan_cols()
-    - ...
 
 Usage:
     ./urban_indicators_scripts.py
@@ -11,6 +11,26 @@ Usage:
 Author:
     Jerome Maiquez - xx.xx.2024
 """
+
+def filter_elem_type(gdf, elem_type):
+    """
+    Function for filtering an OSM gdf by element type.
+    Element type could be either node, way, or relation.
+    """
+
+    # import geopandas
+    import geopandas as gpd
+
+    # assertions to weed out wrong input types
+    assert type(gdf) == gpd.geodataframe.GeoDataFrame, "df must be geodataframe"
+    assert elem_type in ("node", "way", "relation"), "elem type must be one of: node, way, or relation"
+
+    # Reset index of gdf (which is multi-indexed by default)
+    gdf.reset_index(inplace=True)
+
+    # Select only the rows with the specified element type
+    return gdf.loc[gdf["element_type"] == elem_type].copy()
+
 
 def drop_nan_cols(gdf, na_cutoff_percent):
     """
@@ -53,4 +73,4 @@ def drop_nan_cols(gdf, na_cutoff_percent):
             drop_cols.append(col)
     
     # Drop all columns in drop_cols list
-    gdf.drop(columns=drop_cols, inplace=True)
+    return gdf.drop(columns=drop_cols)
