@@ -16,6 +16,18 @@ def filter_elem_type(gdf, elem_type):
     """
     Function for filtering an OSM gdf by element type.
     Element type could be either node, way, or relation.
+
+    Parameters
+    ----------
+    gdf: <geopandas.geodataframe.GeoDataFrame>
+        GeoDataFrame to undergo subsetting.
+    elem_type: <str> or <list> [ "node" | "way" | "relation" ]
+        OSM element type(s) to retain in GeoDataFrame.
+
+    Returns
+    -------
+    <geopandas.geodataframe.GeoDataFrame>
+        Same geoDataFrame, whose rows are only those with matching element type. 
     """
 
     # import geopandas
@@ -23,13 +35,19 @@ def filter_elem_type(gdf, elem_type):
 
     # assertions to weed out wrong input types
     assert type(gdf) == gpd.geodataframe.GeoDataFrame, "df must be geodataframe"
-    assert elem_type in ("node", "way", "relation"), "elem type must be one of: node, way, or relation"
+    assert type(elem_type) in (str, list), "elem type must be a str or list of strs"
 
     # Reset index of gdf (which is multi-indexed by default)
     gdf.reset_index(inplace=True)
 
     # Select only the rows with the specified element type
-    return gdf.loc[gdf["element_type"] == elem_type].copy()
+    if type(elem_type) == str:
+        assert elem_type in ("node", "way", "relation"), "elem type must be one of: node, way, or relation"
+        return gdf.loc[gdf["element_type"] == elem_type].copy()
+
+    elif type(elem_type) == list:
+        assert all([i in ("node", "way", "relation") for i in elem_type]), "elem types must be: node, way, and/or relation"
+        return gdf.loc[gdf["element_type"].isin(elem_type)].copy()
 
 
 def drop_nan_cols(gdf, na_cutoff_percent):
@@ -48,7 +66,7 @@ def drop_nan_cols(gdf, na_cutoff_percent):
     Returns
     -------
     <geopandas.geodataframe.GeoDataFrame>
-        GeoDataFrame with only relevant columns retained.
+        Same geoDataFrame, but with only relevant columns retained.
     """
 
     # import geopandas
