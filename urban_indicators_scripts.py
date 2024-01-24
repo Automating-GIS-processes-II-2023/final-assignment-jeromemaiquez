@@ -250,13 +250,15 @@ def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r
             linewidth=linewidths[lane] # ...with the correct line width
         )
     
-    # Get bounding box of buffer ring...
+    # Get bounding box & radius of buffer ring...
     proj_ring_gdf = ring_gdf.to_crs(streets_gdf.crs)
     minx, miny, maxx, maxy = proj_ring_gdf.total_bounds
+    ring_radius = round(proj_ring_gdf.minimum_bounding_radius()[0], 0)
+    ax_pad = ring_radius * 0.10
 
     # ...to set x- and y-limits of axis (to ensure it is square)
-    ax.set_xlim(left=minx - 200, right=maxx + 200)
-    ax.set_ylim(bottom=miny - 200, top=maxy + 200)
+    ax.set_xlim(left=minx - ax_pad, right=maxx + ax_pad)
+    ax.set_ylim(bottom=miny - ax_pad, top=maxy + ax_pad)
 
     # Set other axis properties
     ax.set_facecolor(facecolor)
@@ -274,8 +276,8 @@ def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r
         pad=3.0
     )
     ax.text(
-        x=minx-50,
-        y=miny-50,
+        x=minx-(ax_pad*0.25),
+        y=miny-(ax_pad*0.25),
         s="Road Network",
         color=edgecolor,
         fontsize=20.0,
