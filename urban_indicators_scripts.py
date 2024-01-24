@@ -279,7 +279,7 @@ def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r
     ax.text(
         x=minx-(ax_pad*0.25),
         y=miny-(ax_pad*0.25),
-        s="Road Network",
+        s=f"Road Network (within a {ring_radius/1_000:.1f} km buffer)",
         color=edgecolor,
         fontsize=20.0,
         fontfamily="Garamond",
