@@ -5,6 +5,7 @@ List of included functions:
     - filter_elem_type()
     - drop_nan_cols()
     - get_buffer_from_place()
+    - parse_street_lanes()
 
 Usage:
     ./urban_indicators_scripts.py
@@ -151,3 +152,39 @@ def get_buffer_from_place(query, dist):
 
     # Reproject back to WGS84 (for OSMnx), then return buffered GDF
     return buffer.to_crs("EPSG:4326")
+
+def parse_street_lanes(streets_gdf):
+    """
+    Function to clean up and parse the `lanes` column
+    of a street GeoDataFrame (edges of an OSM street graph).
+
+    Parameters
+    ----------
+    streets_gdf: <geopandas.geodataframe.GeoDataFrame>
+        Street network GDF whose `lanes` column is to be cleaned.
+    
+    Returns
+    -------
+    <geopandas.geodataframe.GeoDataFrame>
+        Same GeoDataFrame, but with a parsed `lanes` column.
+    """
+
+    # import packages
+    import geopandas as gpd
+
+    # assertions to weed out wrong input types
+    assert type(streets_gdf) == gpd.geodataframe.GeoDataFrame, "gdf must be geodataframe"
+    assert all(x in streets_gdf.columns for x in ["osmid", "lanes", "geometry"]), "streets gdf must be from OSM"
+
+    # Set all NaN values in `lanes` column to 1
+    streets_gdf.loc[streets_gdf["lanes"].isna(), "lanes"] = 1
+
+    # If value in `lanes` column is a list, set to its max value
+    streets_gdf["lanes"] = streets_gdf["lanes"].apply(
+        lambda x: max(x) if isinstance(x, list) == True else x
+    )
+
+    # Convert lanes column to type int
+    streets_gdf["lanes"] = streets_gdf["lanes"].astype(int)
+
+    return streets_gdf
