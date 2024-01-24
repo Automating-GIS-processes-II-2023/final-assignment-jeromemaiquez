@@ -15,6 +15,7 @@ Author:
     Jerome Maiquez - xx.xx.2024
 """
 
+
 def filter_elem_type(gdf, elem_type):
     """
     Function for filtering an OSM gdf by element type.
