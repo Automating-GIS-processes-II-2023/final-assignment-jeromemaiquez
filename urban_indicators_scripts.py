@@ -4,6 +4,7 @@ Functions for Urban Assessment Tool.
 List of included functions:
     - filter_elem_type()
     - drop_nan_cols()
+    - get_buffer_from_place()
 
 Usage:
     ./urban_indicators_scripts.py
@@ -92,3 +93,61 @@ def drop_nan_cols(gdf, na_cutoff_percent):
     
     # Drop all columns in drop_cols list
     return gdf.drop(columns=drop_cols)
+
+
+def get_buffer_from_place(query, dist):
+    """
+    Function for generating a circle of radius `dist` around
+    a point corresponding to a geocoded place name or address.
+
+    Usage
+    -----
+    `dist` must be provided in meters.
+
+    Parameters
+    ----------
+    query: <str>
+        Place name or address to be geocoded.
+    dist: <int> or <float>
+        Distance (in meters) of buffer around point of interest.
+
+    Returns
+    -------
+    <geopandas.geodataframe.GeoDataFrame>
+        Single-row geodataframe containing place name and polygon geometry.
+        Returned GeoDataFrame CRS is EPSG: 4326.
+    """
+
+    # import packages
+    import geopandas as gpd
+    import osmnx as ox
+    import shapely as shp
+
+    # assertions to weed out wrong input data types
+    assert type(query) == str, "Place name/address must be a str"
+    assert type(dist) in (int, float), "Distance must be numeric"
+
+    # Geocode place name as point
+    place = ox.geocode(query)
+
+    # Parse place name out of query
+    place_name = query.split(", ")[0] if ", " in query else query
+
+    # Create geodataframe with two columns:
+    buffer = gpd.GeoDataFrame(
+        {
+            # 1) name of place
+            "name": [place_name],
+            # 2) point geometry for geocoded lat-lon tuple
+            # tuple must be reversed so that x comes first
+            "geometry": [shp.Point(reversed(place))]
+        },
+        # Set CRS as WGS 84 first, to be changed later
+        crs="EPSG:4326"
+    ).to_crs("EPSG:3857") # <-- change CRS here
+
+    # Set geometry to buffer of radius `dist` around point
+    buffer["geometry"] = buffer["geometry"].buffer(dist)
+
+    # Reproject back to WGS84 (for OSMnx), then return buffered GDF
+    return buffer.to_crs("EPSG:4326")
