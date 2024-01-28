@@ -7,6 +7,7 @@ List of included functions:
     - get_buffer_from_place()
     - parse_street_lanes()
     - plot_streets()
+    - plot_heatmap()
 
 Usage:
     ./urban_indicators_scripts.py
@@ -207,7 +208,15 @@ def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r
         Scaling factor between number of lanes and line width in plot.
     color_scheme: <str> or <tuple>
         Matplotlib color map to use for edge and face colors.
-
+    
+    Returns
+    -------
+    <matplotlib.pyplot.figure>
+        Figure containing the street network plot.
+    <matplotlib.axes.Axes>
+        Axes containing the street network plot and text.
+    <tuple>
+        Four-element tuple containing bounds of buffer ring.
     """
     
     # Import packages
@@ -302,5 +311,94 @@ def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r
     # Remove axis labels for photo finish
     ax.set_axis_off()
 
+    # Store buffer bounds in 1 variable
+    ring_bounds = (minx, maxx, miny, maxy)
+
     # Show plot
-    plt.show()
+    return fig, ax, ring_bounds
+
+
+def plot_heatmap(gdf, weights, ax, bounds, bins=100, smoothing=1.0, alpha=0.4, color_scheme="Greys_r"):
+    """
+    Function that plots a heatmap of a given point GeoDataFrame.
+    Must be run in the same cell as plot_streets(), for it assumes a given ax & bounds.
+
+    Parameters
+    ----------
+    gdf: <geopandas.geodataframe.GeoDataFrame>
+        Point GeoDataFrame to be plotted into a heatmap.
+    weights: <str>
+        Label of column in `gdf` whose values are to be used as heatmap weights.
+    ax: <matplotlib.axes.Axes>
+        Axes on which the heatmap will be plotted.
+    bounds: <tuple>
+        Four-element tuple containing min and max x- and y-coordinates for the heatmap.
+    bins: <int>
+        Number of pixels for the heatmap image on both dimensions.
+    smoothing: <float>
+        Smoothing factor for Gaussian filter on heatmap image.
+    alpha: <float>
+        Opacity of heatmap (0.0 = transparent, 1.0 = opaque).
+    color_scheme: <str> or <tuple>
+        Matplotlib color map to use for heatmap visualization.
+    
+    Returns
+    -------
+    <matplotlib.image>
+        2D image of the generated heatmap.
+    """
+
+    # Import packages
+    import numpy as np
+    from scipy import ndimage
+    import matplotlib.pyplot as plt
+    import geopandas as gpd
+
+    # Assertions to weed out incorrect data types
+    assert type(gdf) == gpd.geodataframe.GeoDataFrame, "input gdf must be geodataframe"
+    assert all([x in ["Point", "Polygon"] for x in gdf.geom_type]), "geometries in geodataframe must be point"
+    assert weights in gdf.columns.values, "weights must be a column in gdf"
+
+    assert type(smoothing) == float, "smoothing factor must be a float"
+    assert type(bins) == int, "number of bins must be an int"
+    assert type(color_scheme) in (str, tuple), "color_scheme must follow matplotlib color formats"
+
+    # If geometries are polygons, convert to centroids
+    if all([x == "Polygon" for x in gdf.geom_type]):
+        gdf = gdf.set_geometry(gdf.centroid)
+
+    # Get x- and y-coordinates of points
+    coords = gdf.geometry.get_coordinates()
+
+    # Create 2D weighted histogram
+    heatmap, _, _ = np.histogram2d(
+        x = coords.y,
+        y = coords.x,
+        bins =  bins,
+        density = False,
+        weights = gdf[weights]
+    )
+
+    # Convert 2D histogram into natural logarithm...
+    logheatmap = np.log(heatmap)
+    logheatmap[np.isneginf(logheatmap)] = 0
+    
+    # ... and apply Gaussian filter
+    logheatmap = ndimage.filters.gaussian_filter(
+        logheatmap,
+        smoothing,
+        mode = "nearest",
+        radius = 10
+    )
+
+    # Show logarithmic heatmap
+    im = ax.imshow(
+        np.ma.masked_where(logheatmap < 0.1, logheatmap),
+        cmap = color_scheme,
+        alpha = alpha,
+        origin = "lower",
+        extent = bounds
+    )
+
+    # Show plot...
+    return im
