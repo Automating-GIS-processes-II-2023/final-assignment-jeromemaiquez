@@ -375,12 +375,13 @@ def plot_heatmap(gdf, weights, ax, bounds, bins=100, smoothing=1.0, alpha=0.4, c
         x = coords.y,
         y = coords.x,
         bins =  bins,
+        range = [list(bounds[0:2]), list(bounds[2:])],
         density = False,
         weights = gdf[weights]
     )
 
     # Convert 2D histogram into natural logarithm...
-    logheatmap = np.log(heatmap)
+    logheatmap = np.log2(heatmap)
     logheatmap[np.isneginf(logheatmap)] = 0
     
     # ... and apply Gaussian filter
@@ -393,7 +394,9 @@ def plot_heatmap(gdf, weights, ax, bounds, bins=100, smoothing=1.0, alpha=0.4, c
 
     # Show logarithmic heatmap
     im = ax.imshow(
-        np.ma.masked_where(logheatmap < 0.1, logheatmap),
+        # heatmap,
+        # np.ma.masked_where(heatmap < 0, heatmap),
+        np.ma.masked_where(logheatmap < 0.01, logheatmap),
         cmap = color_scheme,
         alpha = alpha,
         origin = "lower",
