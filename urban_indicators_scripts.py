@@ -375,7 +375,7 @@ def plot_heatmap(gdf, weights, ax, bounds, bins=100, smoothing=1.0, alpha=0.4, c
         x = coords.y,
         y = coords.x,
         bins =  bins,
-        range = [list(bounds[0:2]), list(bounds[2:])],
+        range = [list(bounds[2:]), list(bounds[0:2])],
         density = False,
         weights = gdf[weights]
     )
