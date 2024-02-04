@@ -194,7 +194,7 @@ def parse_street_lanes(streets_gdf):
     return streets_gdf
 
 
-def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r"):
+def plot_streets(streets_gdf, ring_gdf, title=None, subtitle=None, width_factor=0.25, color_scheme="Greys_r"):
     """
     Function to plot street network GDF in a minimalist style.
 
@@ -208,6 +208,10 @@ def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r
         Scaling factor between number of lanes and line width in plot.
     color_scheme: <str> or <tuple>
         Matplotlib color map to use for edge and face colors.
+    title: <str>
+        Main title of the plot. If `None`, gets the query name.
+    subtitle: <str>
+        Subtitle of the plot. If `None`, displays "Road Network..."
     
     Returns
     -------
@@ -233,6 +237,11 @@ def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r
     assert type(width_factor) == float, "width factor must be a float"
     assert 0.0 <= width_factor <= 1.0, "width factor must be between 0 and 1"
     assert type(color_scheme) in (str, tuple), "color_scheme must follow matplotlib color formats"
+
+    if title != None:
+        assert type(title) == str, "if supplied, title must be a str"
+    if subtitle != None:
+        assert type(subtitle) == str, "if supplied, subtitle must be a str"
     
     # Get min and max number of lanes
     min_lanes = streets_gdf["lanes"].min()
@@ -270,10 +279,14 @@ def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r
     ax.set_xlim(left=minx - ax_pad, right=maxx + ax_pad)
     ax.set_ylim(bottom=miny - ax_pad, top=maxy + ax_pad)
 
+    # Configure plot title and subtitle
+    plot_title = ring_gdf.loc[0, "name"] if title == None else title
+    plot_subtitle = f"Road Network (within a {ring_radius/1_000:.1f} km buffer)" if subtitle == None else subtitle
+
     # Set other axis properties
     ax.set_facecolor(facecolor)
     ax.set_title(
-        ring_gdf.loc[0, "name"],
+        plot_title,
         loc="left",
         color=edgecolor,
 
@@ -288,7 +301,7 @@ def plot_streets(streets_gdf, ring_gdf, width_factor=0.25, color_scheme="Greys_r
     ax.text(
         x=minx-(ax_pad*0.25),
         y=miny-(ax_pad*0.25),
-        s=f"Road Network (within a {ring_radius/1_000:.1f} km buffer)",
+        s=plot_subtitle,
         color=edgecolor,
         fontsize=20.0,
         fontfamily="Garamond",
