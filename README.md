@@ -76,7 +76,6 @@ Part D: Plotting it All
 - [Notes on graph theory --- Centrality Measures](https://towardsdatascience.com/notes-on-graph-theory-centrality-measurements-e37d2e49550a) -- Overview of common centrality measures for networks/graphs, including betweennes centrality
 
 ### Feedback
-- `Matplotlib` get very difficult to work with, very quickly -- customizing text and axes positions is very finnicky, and image coordinate systems are confusing
-- Why can't `pyplot`'s `hist2d` function take in an `ax` parameter like most other functionalities in the package? Feels like an oversight...
-- The difficulty in working with matplotlib emphasizes for me the continuing importance of open-source desktop GIS such as QGIS for geovisualization
+- `Matplotlib` can get very complicated, and it's a shame that pyplot's `hist2d()` function sets its own axes limits and ignores other axes
+- I am very open to other suggestions when it comes to (geo)visualization in Python! But for now, I remain of the opinion that it is easiest to do this in QGIS
 - Calculating betweenness centrality via `networkx` gets very slow very soon, so it is very important to set a low `k` parameter to ensure respectable runtimes

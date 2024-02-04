@@ -294,16 +294,25 @@ def plot_streets(streets_gdf, ring_gdf, title=None, subtitle=None, width_factor=
         fontfamily="Garamond",
         fontstretch="expanded",
 
-        y=0.08, # 8% of figure height (from bottom)
+        y=0.09, # 8% of figure height (from bottom)
         x=0.03, # 3% of figure width (from left)
         pad=3.0
     )
     ax.text(
         x=minx-(ax_pad*0.25),
-        y=miny-(ax_pad*0.25),
+        y=miny-(ax_pad*(-0.25)),
         s=plot_subtitle,
         color=edgecolor,
         fontsize=20.0,
+        fontfamily="Garamond",
+        fontstretch="expanded"
+    )
+    ax.text(
+        x=minx-(ax_pad*0.25),
+        y=miny-(ax_pad*0.35),
+        s="(c) OpenStreetMap Contributors",
+        color=edgecolor,
+        fontsize=10.0,
         fontfamily="Garamond",
         fontstretch="expanded"
     )
